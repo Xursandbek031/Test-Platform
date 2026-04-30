@@ -71,7 +71,7 @@ const StudentTest = () => {
           test_id: test.id,
           student_first_name: session!.firstName,
           student_last_name: session!.lastName,
-          group_id: session!.groupId,
+          // group_id: session!.groupId,
           group_name: session!.groupName,
           total_questions: totalQuestions,
           correct_count: correct,
@@ -90,6 +90,14 @@ const StudentTest = () => {
     sessionStorage.setItem("lastResult", JSON.stringify(data))
     sessionStorage.removeItem("studentSession")
     navigate(`/student/result/${data.id}`)
+
+    console.log({
+      test_id: test.id,
+      firstName: session?.firstName,
+      groupId: session?.groupId,
+      groupName: session?.groupName,
+    });
+
   }, [test, questions, answers, session, startedAt, navigate])
 
   useEffect(() => {
