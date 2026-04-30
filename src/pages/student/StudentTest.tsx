@@ -1,44 +1,44 @@
-import { useEffect, useMemo, useState, useCallback } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import { useTranslation } from "react-i18next";
-import { motion, AnimatePresence } from "framer-motion";
-import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Label } from "@/components/ui/label";
-import { Progress } from "@/components/ui/progress";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Clock, ChevronLeft, ChevronRight } from "lucide-react";
-import { toast } from "sonner";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
+import { Button } from "@/components/ui/button"
+import { Card } from "@/components/ui/card"
+import { Label } from "@/components/ui/label"
+import { Progress } from "@/components/ui/progress"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { supabase } from "@/integrations/supabase/client"
+import { AnimatePresence, motion } from "framer-motion"
+import { ChevronLeft, ChevronRight, Clock } from "lucide-react"
+import { useCallback, useEffect, useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
+import { useNavigate, useParams } from "react-router-dom"
+import { toast } from "sonner"
 
-interface Question { id: string; text: string; options: string[]; correct_index: number; position: number; }
-interface SessionData { firstName: string; lastName: string; groupId: string; groupName: string; testId: string; }
+interface Question { id: string; text: string; options: string[]; correct_index: number; position: number }
+interface SessionData { firstName: string; lastName: string; groupId: string; groupName: string; testId: string }
 
 const StudentTest = () => {
-  const { t } = useTranslation();
-  const { testId } = useParams<{ testId: string }>();
-  const navigate = useNavigate();
-  const [test, setTest] = useState<{ id: string; title: string; time_minutes: number } | null>(null);
-  const [questions, setQuestions] = useState<Question[]>([]);
-  const [answers, setAnswers] = useState<Record<string, number>>({});
-  const [current, setCurrent] = useState(0);
-  const [secondsLeft, setSecondsLeft] = useState(0);
-  const [startedAt] = useState(Date.now());
-  const [loading, setLoading] = useState(true);
+  const { t } = useTranslation()
+  const { testId } = useParams<{ testId: string }>()
+  const navigate = useNavigate()
+  const [test, setTest] = useState<{ id: string; title: string; time_minutes: number } | null>(null)
+  const [questions, setQuestions] = useState<Question[]>([])
+  const [answers, setAnswers] = useState<Record<string, number>>({})
+  const [current, setCurrent] = useState(0)
+  const [secondsLeft, setSecondsLeft] = useState(0)
+  const [startedAt] = useState(Date.now())
+  const [loading, setLoading] = useState(true)
   const session: SessionData | null = useMemo(() => {
-    const raw = sessionStorage.getItem("studentSession");
-    return raw ? JSON.parse(raw) : null;
-  }, []);
+    const raw = sessionStorage.getItem("studentSession")
+    return raw ? JSON.parse(raw) : null
+  }, [])
 
   const submit = useCallback(async () => {
-    if (!test) return;
-    const totalQuestions = questions.length;
-    let correct = 0;
+    if (!test) return
+    const totalQuestions = questions.length
+    let correct = 0
     const answerLog = questions.map((q) => {
-      const selected = answers[q.id];
-      const isCorrect = selected === q.correct_index;
-      if (isCorrect) correct++;
+      const selected = answers[q.id]
+      const isCorrect = selected === q.correct_index
+      if (isCorrect) correct++
       return {
         questionId: q.id,
         questionText: q.text,
@@ -46,10 +46,10 @@ const StudentTest = () => {
         selected: selected ?? null,
         correctIndex: q.correct_index,
         isCorrect,
-      };
-    });
-    const score = totalQuestions > 0 ? (correct / totalQuestions) * 100 : 0;
-    const timeTaken = Math.floor((Date.now() - startedAt) / 1000);
+      }
+    })
+    const score = totalQuestions > 0 ? (correct / totalQuestions) * 100 : 0
+    const timeTaken = Math.floor((Date.now() - startedAt) / 1000)
 
     // const { data, error } = await supabase.from("results").insert({
     //   test_id: test.id,
@@ -81,58 +81,61 @@ const StudentTest = () => {
         }
       ])
       .select()
-      .single();
+      .single()
 
     if (error) {
-      toast.error(error.message);
-      return;
+      toast.error(error.message)
+      return
     }
-    sessionStorage.setItem("lastResult", JSON.stringify(data));
-    sessionStorage.removeItem("studentSession");
-    navigate(`/student/result/${data.id}`);
-  }, [test, questions, answers, session, startedAt, navigate]);
+    sessionStorage.setItem("lastResult", JSON.stringify(data))
+    sessionStorage.removeItem("studentSession")
+    navigate(`/student/result/${data.id}`)
+  }, [test, questions, answers, session, startedAt, navigate])
 
   useEffect(() => {
     if (!session || session.testId !== testId) {
-      navigate("/student", { replace: true });
-      return;
+      navigate("/student", { replace: true })
+      return
     }
     (async () => {
       const [tRes, qRes] = await Promise.all([
         supabase.from("tests").select("id, title, time_minutes").eq("id", testId).single(),
         supabase.from("questions").select("id, text, options, correct_index, position").eq("test_id", testId).order("position"),
-      ]);
+      ])
       if (tRes.data) {
-        setTest(tRes.data);
-        setSecondsLeft(tRes.data.time_minutes * 60);
+        setTest(tRes.data)
+        setSecondsLeft(tRes.data.time_minutes * 60)
       }
-      if (qRes.data) setQuestions(qRes.data as Question[]);
-      setLoading(false);
-    })();
-  }, [testId, session, navigate]);
+      if (qRes.data) setQuestions(qRes.data as Question[])
+      setLoading(false)
+    })()
+  }, [testId, session, navigate])
 
   useEffect(() => {
-    if (!test || secondsLeft <= 0) return;
-    const id = setInterval(() => setSecondsLeft((s) => s - 1), 1000);
-    return () => clearInterval(id);
-  }, [test, secondsLeft]);
+    if (!test || secondsLeft <= 0) return
+    const id = setInterval(() => setSecondsLeft((s) => s - 1), 1000)
+    return () => clearInterval(id)
+  }, [test, secondsLeft])
 
   useEffect(() => {
     if (test && secondsLeft === 0 && questions.length > 0) {
-      toast.info("Vaqt tugadi");
-      submit();
+      toast.info("Vaqt tugadi")
+      submit()
     }
-  }, [secondsLeft, test, questions.length, submit]);
+  }, [secondsLeft, test, questions.length, submit])
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center">{t("common.loading")}</div>;
-  if (!test || questions.length === 0) return <div className="min-h-screen flex items-center justify-center">No questions</div>;
+  if (loading) return <div className="min-h-screen flex items-center justify-center">{t("common.loading")}</div>
+  if (!test || questions.length === 0) return <div className="min-h-screen flex items-center justify-center">No questions</div>
 
-  const q = questions[current];
-  const answeredCount = Object.keys(answers).length;
-  const progress = (answeredCount / questions.length) * 100;
-  const mins = Math.floor(secondsLeft / 60).toString().padStart(2, "0");
-  const secs = (secondsLeft % 60).toString().padStart(2, "0");
-  const timeWarning = secondsLeft < 60;
+  const q = questions[current]
+  const answeredCount = Object.keys(answers).length
+  const progress = (answeredCount / questions.length) * 100
+  const mins = Math.floor(secondsLeft / 60).toString().padStart(2, "0")
+  const secs = (secondsLeft % 60).toString().padStart(2, "0")
+  const timeWarning = secondsLeft < 60
+
+  console.log("TEST:", test)
+  console.log("SESSION:", session)
 
   return (
     <div className="min-h-screen gradient-subtle">
@@ -222,13 +225,12 @@ const StudentTest = () => {
             <button
               key={qq.id}
               onClick={() => setCurrent(i)}
-              className={`h-8 rounded-md text-xs font-medium transition-smooth ${
-                i === current
-                  ? "bg-primary text-primary-foreground"
-                  : answers[qq.id] !== undefined
+              className={`h-8 rounded-md text-xs font-medium transition-smooth ${i === current
+                ? "bg-primary text-primary-foreground"
+                : answers[qq.id] !== undefined
                   ? "bg-accent text-accent-foreground"
                   : "bg-muted text-muted-foreground hover:bg-muted/70"
-              }`}
+                }`}
             >
               {i + 1}
             </button>
@@ -236,7 +238,7 @@ const StudentTest = () => {
         </div>
       </main>
     </div>
-  );
-};
+  )
+}
 
-export default StudentTest;
+export default StudentTest
