@@ -51,18 +51,37 @@ const StudentTest = () => {
     const score = totalQuestions > 0 ? (correct / totalQuestions) * 100 : 0;
     const timeTaken = Math.floor((Date.now() - startedAt) / 1000);
 
-    const { data, error } = await supabase.from("results").insert({
-      test_id: test.id,
-      student_first_name: session!.firstName,
-      student_last_name: session!.lastName,
-      group_id: session!.groupId,
-      group_name: session!.groupName,
-      total_questions: totalQuestions,
-      correct_count: correct,
-      score_percent: Number(score.toFixed(2)),
-      answers: answerLog,
-      time_taken_seconds: timeTaken,
-    }).select().single();
+    // const { data, error } = await supabase.from("results").insert({
+    //   test_id: test.id,
+    //   student_first_name: session!.firstName,
+    //   student_last_name: session!.lastName,
+    //   group_id: session!.groupId,
+    //   group_name: session!.groupName,
+    //   total_questions: totalQuestions,
+    //   correct_count: correct,
+    //   score_percent: Number(score.toFixed(2)),
+    //   answers: answerLog,
+    //   time_taken_seconds: timeTaken,
+    // }).select().single();
+
+    const { data, error } = await supabase
+      .from("results")
+      .insert([
+        {
+          test_id: test.id,
+          student_first_name: session!.firstName,
+          student_last_name: session!.lastName,
+          group_id: session!.groupId,
+          group_name: session!.groupName,
+          total_questions: totalQuestions,
+          correct_count: correct,
+          score_percent: Number(score.toFixed(2)),
+          answers: answerLog,
+          time_taken_seconds: timeTaken,
+        }
+      ])
+      .select()
+      .single();
 
     if (error) {
       toast.error(error.message);
