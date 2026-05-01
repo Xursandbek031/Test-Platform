@@ -167,7 +167,7 @@ const StudentTest = () => {
                   <Label
                     key={i}
                     htmlFor={`opt-${i}`}
-                    className={`flex items-center gap-3 p-4 rounded-lg border cursor-pointer transition-smooth hover:bg-accent/50 ${answers[q.id] === i ? "border-primary bg-accent" : "border-border"}`}
+                    className={`flex items-center gap-3 p-4 rounded-lg border cursor-pointer transition-smooth hover:bg-accent/50 ${answers[q.id] === i ? "border-primary bg-accent/70" : "border-border"}`}
                   >
                     <RadioGroupItem value={i.toString()} id={`opt-${i}`} />
                     <span className="flex-1 font-normal">{opt}</span>
@@ -215,7 +215,7 @@ const StudentTest = () => {
               className={`h-8 rounded-md text-xs font-medium transition-smooth ${i === current
                 ? "bg-primary text-primary-foreground"
                 : answers[qq.id] !== undefined
-                  ? "bg-accent text-accent-foreground"
+                  ? "bg-primary/60 text-accent-foreground"
                   : "bg-muted text-muted-foreground hover:bg-muted/70"
                 }`}
             >
