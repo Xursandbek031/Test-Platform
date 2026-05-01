@@ -83,7 +83,7 @@ const StudentResult = () => {
                       <div
                         key={i}
                         className={`text-sm px-3 py-2 rounded-md ${
-                          isCorrect ? "bg-success/10 text-success-foreground border border-success/30 font-medium"
+                          isCorrect ? "bg-success/20 text-success border border-success/50 font-semibold"
                           : isSelected ? "bg-destructive/10 text-destructive border border-destructive/30"
                           : "text-muted-foreground"
                         }`}
