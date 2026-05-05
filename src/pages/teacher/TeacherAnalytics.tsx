@@ -1,47 +1,59 @@
-import { useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
-import { Card } from "@/components/ui/card";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, PieChart, Pie, Cell, Legend } from "recharts";
-import { Trophy, TrendingDown, Activity, Users } from "lucide-react";
+import { useEffect, useState } from "react"
+import { useTranslation } from "react-i18next"
+import { supabase } from "@/integrations/supabase/client"
+import { useAuth } from "@/hooks/useAuth"
+import { Card } from "@/components/ui/card"
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, PieChart, Pie, Cell, Legend } from "recharts"
+import { Trophy, TrendingDown, Activity, Users } from "lucide-react"
 
-interface Row { score_percent: number; student_first_name: string; student_last_name: string; tests: { title: string } | null; }
+interface Row { score_percent: number; student_first_name: string; student_last_name: string; group_name: string | null; tests: { title: string } | null }
 
 const TeacherAnalytics = () => {
-  const { t } = useTranslation();
-  const { user } = useAuth();
-  const [rows, setRows] = useState<Row[]>([]);
+  const { t } = useTranslation()
+  const { user } = useAuth()
+  const [rows, setRows] = useState<Row[]>([])
 
   useEffect(() => {
     if (!user) return;
     (async () => {
       const { data } = await supabase
         .from("results")
-        .select("score_percent, student_first_name, student_last_name, tests(title)");
-      setRows((data as any) || []);
-    })();
-  }, [user]);
+        .select("score_percent, student_first_name, student_last_name, group_name, tests(title)")
+      setRows((data as any) || [])
+    })()
+  }, [user])
 
-  const total = rows.length;
-  const avg = total > 0 ? rows.reduce((s, r) => s + Number(r.score_percent), 0) / total : 0;
-  const sorted = [...rows].sort((a, b) => Number(b.score_percent) - Number(a.score_percent));
-  const top = sorted.slice(0, 5).map((r) => ({ name: `${r.student_first_name} ${r.student_last_name[0]}.`, score: Number(r.score_percent) }));
-  const low = sorted.slice(-5).reverse().map((r) => ({ name: `${r.student_first_name} ${r.student_last_name[0]}.`, score: Number(r.score_percent) }));
+  const total = rows.length
+  const avg = total > 0 ? rows.reduce((s, r) => s + Number(r.score_percent), 0) / total : 0
+  const sorted = [...rows].sort((a, b) => Number(b.score_percent) - Number(a.score_percent))
+  const top = sorted.slice(0, 5).map((r) => ({ name: `${r.student_first_name} ${r.student_last_name[0]}.`, score: Number(r.score_percent) }))
+  const low = sorted.slice(-5).reverse().map((r) => ({ name: `${r.student_first_name} ${r.student_last_name[0]}.`, score: Number(r.score_percent) }))
+
+  const groupMap = new Map<string, { sum: number; count: number }>()
+  rows.forEach((r) => {
+    const g = r.group_name?.trim() || "—"
+    const cur = groupMap.get(g) || { sum: 0, count: 0 }
+    cur.sum += Number(r.score_percent)
+    cur.count += 1
+    groupMap.set(g, cur)
+  })
+  const groupAvg = Array.from(groupMap.entries())
+    .map(([name, v]) => ({ name, avg: Number((v.sum / v.count).toFixed(1)), count: v.count }))
+    .sort((a, b) => b.avg - a.avg)
 
   const buckets = [
     { name: "0-40%", value: rows.filter((r) => Number(r.score_percent) < 40).length, color: "hsl(var(--destructive))" },
     { name: "40-60%", value: rows.filter((r) => Number(r.score_percent) >= 40 && Number(r.score_percent) < 60).length, color: "hsl(var(--warning))" },
     { name: "60-80%", value: rows.filter((r) => Number(r.score_percent) >= 60 && Number(r.score_percent) < 80).length, color: "hsl(var(--primary))" },
     { name: "80-100%", value: rows.filter((r) => Number(r.score_percent) >= 80).length, color: "hsl(var(--success))" },
-  ];
+  ]
 
   const stats = [
     { label: t("teacher.totalAttempts"), value: total, icon: Users, color: "text-primary" },
     { label: t("teacher.avgScore"), value: `${avg.toFixed(1)}%`, icon: Activity, color: "text-success" },
     { label: t("teacher.topScores"), value: sorted[0] ? `${Number(sorted[0].score_percent).toFixed(0)}%` : "—", icon: Trophy, color: "text-warning" },
     { label: t("teacher.lowScores"), value: sorted[sorted.length - 1] ? `${Number(sorted[sorted.length - 1].score_percent).toFixed(0)}%` : "—", icon: TrendingDown, color: "text-destructive" },
-  ];
+  ]
 
   return (
     <div className="space-y-6">
@@ -102,8 +114,25 @@ const TeacherAnalytics = () => {
           </PieChart>
         </ResponsiveContainer>
       </Card>
-    </div>
-  );
-};
 
-export default TeacherAnalytics;
+      <Card className="p-5">
+        <h3 className="font-semibold mb-4">Guruh bo'yicha o'rtacha ball</h3>
+        {groupAvg.length === 0 ? (
+          <p className="text-sm text-muted-foreground">Ma'lumot yo'q</p>
+        ) : (
+          <ResponsiveContainer width="100%" height={Math.max(240, groupAvg.length * 40)}>
+            <BarChart data={groupAvg} layout="vertical" margin={{ left: 20 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+              <XAxis type="number" domain={[0, 100]} fontSize={11} stroke="hsl(var(--muted-foreground))" />
+              <YAxis type="category" dataKey="name" fontSize={11} stroke="hsl(var(--muted-foreground))" width={120} />
+              <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8 }} formatter={(v: any, _n, p: any) => [`${v}% (${p.payload.count} ta)`, "O'rtacha"]} />
+              <Bar dataKey="avg" fill="hsl(var(--primary))" radius={[0, 6, 6, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        )}
+      </Card>
+    </div>
+  )
+}
+
+export default TeacherAnalytics

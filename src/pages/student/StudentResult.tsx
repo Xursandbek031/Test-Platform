@@ -1,34 +1,33 @@
-import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
-import { useTranslation } from "react-i18next";
-import { motion } from "framer-motion";
-import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { CheckCircle2, XCircle, Home, MinusCircle } from "lucide-react";
+import { Button } from "@/components/ui/button"
+import { Card } from "@/components/ui/card"
+import { motion } from "framer-motion"
+import { CheckCircle2, Home, MinusCircle, XCircle } from "lucide-react"
+import { useEffect, useState } from "react"
+import { useTranslation } from "react-i18next"
+import { Link, useParams } from "react-router-dom"
 
 interface AnswerLog {
-  questionId: string;
-  questionText: string;
-  options: string[];
-  selected: number | null;
-  correctIndex: number;
-  isCorrect: boolean;
+  questionId: string
+  questionText: string
+  options: string[]
+  selected: number | null
+  correctIndex: number
+  isCorrect: boolean
 }
 
 const StudentResult = () => {
-  const { t } = useTranslation();
-  const { resultId } = useParams<{ resultId: string }>();
-  const [result, setResult] = useState<any>(null);
+  const { t } = useTranslation()
+  const { resultId } = useParams<{ resultId: string }>()
+  const [result, setResult] = useState<any>(null)
 
   useEffect(() => {
-    const cached = sessionStorage.getItem("lastResult");
+    const cached = sessionStorage.getItem("lastResult")
     if (cached) {
-      const parsed = JSON.parse(cached);
-      if (parsed.id === resultId) { setResult(parsed); return; }
+      const parsed = JSON.parse(cached)
+      if (parsed.id === resultId) { setResult(parsed); return }
     }
     // results table is owner-only; rely on cached. If missing, show empty.
-  }, [resultId]);
+  }, [resultId])
 
   if (!result) {
     return (
@@ -36,12 +35,12 @@ const StudentResult = () => {
         <p className="text-muted-foreground">Natija topilmadi</p>
         <Button asChild><Link to="/">{t("student.backHome")}</Link></Button>
       </div>
-    );
+    )
   }
 
-  const answers: AnswerLog[] = result.answers || [];
-  const score = Number(result.score_percent);
-  const passed = score >= 60;
+  const answers: AnswerLog[] = result.answers || []
+  const score = Number(result.score_percent)
+  const passed = score >= 60
 
   return (
     <div className="min-h-screen gradient-subtle">
@@ -72,27 +71,26 @@ const StudentResult = () => {
                   {a.selected === null
                     ? <MinusCircle className="h-5 w-5 text-muted-foreground shrink-0" />
                     : a.isCorrect
-                    ? <CheckCircle2 className="h-5 w-5 text-success shrink-0" />
-                    : <XCircle className="h-5 w-5 text-destructive shrink-0" />}
+                      ? <CheckCircle2 className="h-5 w-5 text-success shrink-0" />
+                      : <XCircle className="h-5 w-5 text-destructive shrink-0" />}
                 </div>
                 <div className="space-y-1.5 ml-6">
                   {a.options.map((opt, i) => {
-                    const isCorrect = i === a.correctIndex;
-                    const isSelected = i === a.selected;
+                    const isCorrect = i === a.correctIndex
+                    const isSelected = i === a.selected
                     return (
                       <div
                         key={i}
-                        className={`text-sm px-3 py-2 rounded-md ${
-                          isCorrect ? "bg-success/20 text-success border border-success/50 font-semibold"
+                        className={`text-sm px-3 py-2 rounded-md ${isCorrect ? "bg-success/10 text-success-foreground border border-success/30 font-medium"
                           : isSelected ? "bg-destructive/10 text-destructive border border-destructive/30"
-                          : "text-muted-foreground"
-                        }`}
+                            : "text-muted-foreground"
+                          }`}
                       >
                         {opt}
                         {isSelected && !isCorrect && <span className="ml-2 text-xs">({t("student.yourAnswer")})</span>}
                         {isCorrect && <span className="ml-2 text-xs">✓ {t("student.correctAnswer")}</span>}
                       </div>
-                    );
+                    )
                   })}
                 </div>
               </Card>
@@ -107,7 +105,7 @@ const StudentResult = () => {
         </motion.div>
       </main>
     </div>
-  );
-};
+  )
+}
 
-export default StudentResult;
+export default StudentResult

@@ -215,7 +215,7 @@ const StudentTest = () => {
               className={`h-8 rounded-md text-xs font-medium transition-smooth ${i === current
                 ? "bg-primary text-primary-foreground"
                 : answers[qq.id] !== undefined
-                  ? "bg-primary/60 text-accent-foreground"
+                  ? "bg-primary text-accent-foreground"
                   : "bg-muted text-muted-foreground hover:bg-muted/70"
                 }`}
             >

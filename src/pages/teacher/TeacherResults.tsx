@@ -1,14 +1,3 @@
-import { useEffect, useMemo, useState } from "react"
-import { useTranslation } from "react-i18next"
-import { supabase } from "@/integrations/supabase/client"
-import { useAuth } from "@/hooks/useAuth"
-import { Card } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,8 +8,19 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { Search, Eye, CheckCircle2, XCircle, MinusCircle, Trash2, Download } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Card } from "@/components/ui/card"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { toast } from "@/hooks/use-toast"
+import { useAuth } from "@/hooks/useAuth"
+import { supabase } from "@/integrations/supabase/client"
+import { CheckCircle2, Download, Eye, MinusCircle, Search, Trash2, XCircle } from "lucide-react"
+import { useEffect, useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
 import * as XLSX from "xlsx"
 
 interface AnswerLog {
@@ -314,8 +314,8 @@ const TeacherResults = () => {
                           <div
                             key={i}
                             className={`text-sm px-3 py-2 rounded-md ${isCorrect ? "bg-success/10 text-success-foreground border border-success/30 font-medium"
-                                : isSelected ? "bg-destructive/10 text-destructive border border-destructive/30"
-                                  : "text-muted-foreground"
+                              : isSelected ? "bg-destructive/10 text-destructive border border-destructive/30"
+                                : "text-muted-foreground"
                               }`}
                           >
                             {opt}
