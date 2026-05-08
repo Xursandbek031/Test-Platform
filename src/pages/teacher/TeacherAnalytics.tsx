@@ -15,10 +15,24 @@ const TeacherAnalytics = () => {
 
   useEffect(() => {
     if (!user) return;
+
     (async () => {
-      const { data } = await supabase
+      const userData = await supabase.auth.getUser()
+      const userId = userData.data.user?.id
+
+      const { data, error } = await supabase
         .from("results")
-        .select("score_percent, student_first_name, student_last_name, group_name, tests(title)")
+        .select(`
+        score_percent,
+        student_first_name,
+        student_last_name,
+        group_name,
+        tests!inner(owner_id, title)
+      `)
+        .eq("tests.owner_id", userId)
+
+      console.log(error)
+
       setRows((data as any) || [])
     })()
   }, [user])
