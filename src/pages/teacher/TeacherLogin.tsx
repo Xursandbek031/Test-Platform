@@ -1,62 +1,78 @@
-import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { useTranslation } from "react-i18next";
-import { motion } from "framer-motion";
-import { z } from "zod";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { ArrowLeft, GraduationCap } from "lucide-react";
-import { LangSwitcher } from "@/components/LangSwitcher";
-import { toast } from "sonner";
+import { LangSwitcher } from "@/components/LangSwitcher"
+import { Button } from "@/components/ui/button"
+import { Card } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { useAuth } from "@/hooks/useAuth"
+import { supabase } from "@/integrations/supabase/client"
+import { motion } from "framer-motion"
+import { ArrowLeft, GraduationCap } from "lucide-react"
+import { useEffect, useState } from "react"
+import { useTranslation } from "react-i18next"
+import { Link, useNavigate } from "react-router-dom"
+import { toast } from "sonner"
+import { z } from "zod"
 
 const schema = z.object({
   email: z.string().trim().email().max(255),
   password: z.string().min(6).max(72),
   fullName: z.string().trim().min(1).max(100).optional(),
-});
+})
 
 const TeacherLogin = () => {
-  const { t } = useTranslation();
-  const navigate = useNavigate();
-  const { user } = useAuth();
-  const [mode, setMode] = useState<"login" | "signup">("login");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [fullName, setFullName] = useState("");
-  const [loading, setLoading] = useState(false);
+  const { t } = useTranslation()
+  const navigate = useNavigate()
+  const { user } = useAuth()
+  const [mode, setMode] = useState<"login" | "signup">("login")
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [fullName, setFullName] = useState("")
+  const [loading, setLoading] = useState(false)
 
-  useEffect(() => { if (user) navigate("/teacher/tests", { replace: true }); }, [user, navigate]);
+  useEffect(() => { if (user) navigate("/teacher/tests", { replace: true }) }, [user, navigate])
 
   const submit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const parsed = schema.safeParse({ email, password, fullName: mode === "signup" ? fullName : undefined });
-    if (!parsed.success) { toast.error(parsed.error.errors[0].message); return; }
-    setLoading(true);
+    e.preventDefault()
+    const parsed = schema.safeParse({ email, password, fullName: mode === "signup" ? fullName : undefined })
+    if (!parsed.success) { toast.error(parsed.error.errors[0].message); return }
+    setLoading(true)
     try {
       if (mode === "login") {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
-        toast.success("Xush kelibsiz!");
-        navigate("/teacher/tests");
-      } else {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email,
+          password
+        })
+
+        console.log("LOGIN:", data)
+        console.log("ERROR:", error)
+
+        if (error) throw error
+
+        toast.success("Xush kelibsiz!")
+        navigate("/teacher/tests")
+      }
+      // if (mode === "login") {
+      //   const { error } = await supabase.auth.signInWithPassword({ email, password });
+      //   if (error) throw error;
+      //   toast.success("Xush kelibsiz!");
+      //   navigate("/teacher/tests");
+      // } 
+
+      else {
         const { error } = await supabase.auth.signUp({
           email, password,
           options: { emailRedirectTo: `${window.location.origin}/teacher/tests`, data: { full_name: fullName } },
-        });
-        if (error) throw error;
-        toast.success("Hisob yaratildi!");
-        navigate("/teacher/tests");
+        })
+        if (error) throw error
+        toast.success("Hisob yaratildi!")
+        navigate("/teacher/tests")
       }
     } catch (err: any) {
-      toast.error(err.message);
+      toast.error(err.message)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   return (
     <div className="min-h-screen gradient-subtle">
@@ -102,7 +118,7 @@ const TeacherLogin = () => {
         </motion.div>
       </main>
     </div>
-  );
-};
+  )
+}
 
-export default TeacherLogin;
+export default TeacherLogin
