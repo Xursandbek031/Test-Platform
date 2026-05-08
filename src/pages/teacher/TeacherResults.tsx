@@ -57,11 +57,39 @@ const TeacherResults = () => {
   const [deleteId, setDeleteId] = useState<string | null>(null)
   const [deleteAllOpen, setDeleteAllOpen] = useState(false)
 
+  // const loadResults = async () => {
+  //   const { data } = await supabase
+  //     .from("results")
+  //     .select("id, student_first_name, student_last_name, group_name, score_percent, correct_count, total_questions, created_at, answers, time_taken_seconds, tests(title)")
+  //     .order("created_at", { ascending: false })
+  //   setRows((data as any) || [])
+  // }
+
   const loadResults = async () => {
-    const { data } = await supabase
+    const userData = await supabase.auth.getUser()
+
+    const userId = userData.data.user?.id
+
+    const { data, error } = await supabase
       .from("results")
-      .select("id, student_first_name, student_last_name, group_name, score_percent, correct_count, total_questions, created_at, answers, time_taken_seconds, tests(title)")
+      .select(`
+      id,
+      student_first_name,
+      student_last_name,
+      group_name,
+      score_percent,
+      correct_count,
+      total_questions,
+      created_at,
+      answers,
+      time_taken_seconds,
+      tests!inner(owner_id, title)
+    `)
+      .eq("tests.owner_id", userId)
       .order("created_at", { ascending: false })
+
+    console.log(error)
+
     setRows((data as any) || [])
   }
 
