@@ -38,25 +38,11 @@ const TeacherLogin = () => {
     setLoading(true)
     try {
       if (mode === "login") {
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email,
-          password
-        })
-
-        console.log("LOGIN:", data)
-        console.log("ERROR:", error)
-
+        const { error } = await supabase.auth.signInWithPassword({ email, password })
         if (error) throw error
-
         toast.success("Xush kelibsiz!")
         navigate("/teacher/tests")
       }
-      // if (mode === "login") {
-      //   const { error } = await supabase.auth.signInWithPassword({ email, password });
-      //   if (error) throw error;
-      //   toast.success("Xush kelibsiz!");
-      //   navigate("/teacher/tests");
-      // } 
 
       else {
         const { error } = await supabase.auth.signUp({
