@@ -341,7 +341,7 @@ const TeacherResults = () => {
                         return (
                           <div
                             key={i}
-                            className={`text-sm px-3 py-2 rounded-md ${isCorrect ? "bg-success/10 text-success-foreground border border-success/30 font-medium"
+                            className={`text-sm px-3 py-2 rounded-md ${isCorrect ? "bg-green-100 text-green-800 border border-green-300 font-medium"
                               : isSelected ? "bg-destructive/10 text-destructive border border-destructive/30"
                                 : "text-muted-foreground"
                               }`}
